@@ -2,6 +2,7 @@ package com.medibook.appointment.service.impl;
 
 import com.medibook.appointment.entity.Appointment;
 import com.medibook.appointment.entity.AppointmentStatus;
+import com.medibook.appointment.event.AppointmentEventPublisher;
 import com.medibook.appointment.repository.AppointmentRepository;
 import com.medibook.appointment.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,10 @@ import java.util.Optional;
 public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
+    private final AppointmentEventPublisher eventPublisher; // ← ADD
 
     @Override
     public Appointment bookAppointment(Appointment appointment) {
-        // Check if slot is already booked
         boolean slotTaken = appointmentRepository.existsBySlotIdAndStatusNot(
             appointment.getSlotId(), AppointmentStatus.CANCELLED
         );
@@ -29,7 +30,23 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus(AppointmentStatus.SCHEDULED);
         appointment.setCreatedAt(LocalDateTime.now());
         appointment.setUpdatedAt(LocalDateTime.now());
-        return appointmentRepository.save(appointment);
+        Appointment saved = appointmentRepository.save(appointment);
+
+        // ← PUBLISH EVENT
+        try {
+            eventPublisher.publishBooked(
+                saved.getPatientId(),
+                "",  // email will be improved with Feign later
+                saved.getAppointmentId(),
+                "Your Doctor",
+                saved.getAppointmentDate() != null ? saved.getAppointmentDate().toString() : "",
+                saved.getStartTime() != null ? saved.getStartTime().toString() : ""
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to publish booking event: " + e.getMessage());
+        }
+
+        return saved;
     }
 
     @Override
@@ -68,12 +85,49 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Appointment cancelAppointment(Long id) {
-        return updateStatus(id, AppointmentStatus.CANCELLED);
+        Appointment appointment = appointmentRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Appointment not found"));
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointment.setUpdatedAt(LocalDateTime.now());
+        Appointment saved = appointmentRepository.save(appointment);
+
+        // ← PUBLISH EVENT
+        try {
+            eventPublisher.publishCancelled(
+                saved.getPatientId(),
+                "",
+                saved.getAppointmentId(),
+                "Your Doctor",
+                saved.getAppointmentDate() != null ? saved.getAppointmentDate().toString() : ""
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to publish cancellation event: " + e.getMessage());
+        }
+
+        return saved;
     }
 
     @Override
     public Appointment completeAppointment(Long id) {
-        return updateStatus(id, AppointmentStatus.COMPLETED);
+        Appointment appointment = appointmentRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Appointment not found"));
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        appointment.setUpdatedAt(LocalDateTime.now());
+        Appointment saved = appointmentRepository.save(appointment);
+
+        // ← PUBLISH EVENT
+        try {
+            eventPublisher.publishCompleted(
+                saved.getPatientId(),
+                "",
+                saved.getAppointmentId(),
+                "Your Doctor"
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to publish completion event: " + e.getMessage());
+        }
+
+        return saved;
     }
 
     @Override
@@ -86,5 +140,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public List<Appointment> getAllAppointments() {
         return appointmentRepository.findAll();
+    }
+
+    @Override
+    public long getCountByProviderId(Long providerId) {
+        return appointmentRepository.countByProviderId(providerId);
     }
 }

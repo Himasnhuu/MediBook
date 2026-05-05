@@ -18,4 +18,5 @@ public interface AppointmentService {
     Appointment completeAppointment(Long id);
     void deleteAppointment(Long id);
     List<Appointment> getAllAppointments();
+    long getCountByProviderId(Long providerId);
 }
