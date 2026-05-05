@@ -6,8 +6,8 @@ import com.medibook.payment.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,109 +18,110 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
-    // Process a new payment
+    // Only PATIENT can process a payment
     @PostMapping
+    @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<Payment> processPayment(
             @RequestBody Payment payment) {
         return ResponseEntity.ok(
-                paymentService.processPayment(payment));
+            paymentService.processPayment(payment));
     }
 
-    // Get payment by ID
+    // PATIENT, PROVIDER or ADMIN can view by ID
     @GetMapping("/{paymentId}")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('PROVIDER') or hasRole('ADMIN')")
     public ResponseEntity<Payment> getById(
             @PathVariable Long paymentId) {
         return ResponseEntity.ok(
-                paymentService.getPaymentById(paymentId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Payment not found")));
+            paymentService.getPaymentById(paymentId)
+                .orElseThrow(() -> new RuntimeException(
+                    "Payment not found")));
     }
 
-    // Get payment by appointment ID
+    // PATIENT, PROVIDER or ADMIN can view by appointment
     @GetMapping("/appointment/{appointmentId}")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('PROVIDER') or hasRole('ADMIN')")
     public ResponseEntity<Payment> getByAppointment(
             @PathVariable Long appointmentId) {
         return ResponseEntity.ok(
-                paymentService
-                        .getPaymentByAppointmentId(
-                                appointmentId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Payment not found")));
+            paymentService.getPaymentByAppointmentId(appointmentId)
+                .orElseThrow(() -> new RuntimeException(
+                    "Payment not found")));
     }
 
-    // Get all payments by patient
+    // PATIENT can view own payments
     @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
     public ResponseEntity<List<Payment>> getByPatient(
             @PathVariable Long patientId) {
         return ResponseEntity.ok(
-                paymentService
-                        .getPaymentsByPatient(patientId));
+            paymentService.getPaymentsByPatient(patientId));
     }
 
-    // Get all payments by provider
+    // PROVIDER can view own earnings
     @GetMapping("/provider/{providerId}")
+    @PreAuthorize("hasRole('PROVIDER') or hasRole('ADMIN')")
     public ResponseEntity<List<Payment>> getByProvider(
             @PathVariable Long providerId) {
         return ResponseEntity.ok(
-                paymentService
-                        .getPaymentsByProvider(providerId));
+            paymentService.getPaymentsByProvider(providerId));
     }
 
-    // Get all payments (admin)
+    // Only ADMIN can view all payments
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Payment>> getAll() {
         return ResponseEntity.ok(
-                paymentService.getPaymentHistory());
+            paymentService.getPaymentHistory());
     }
 
-    // Refund a payment
+    // PATIENT or ADMIN can request refund
     @PutMapping("/{paymentId}/refund")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
     public ResponseEntity<Payment> refund(
             @PathVariable Long paymentId) {
         return ResponseEntity.ok(
-                paymentService.refundPayment(paymentId));
+            paymentService.refundPayment(paymentId));
     }
 
-    // Get payment status
+    // Public — anyone can check payment status
     @GetMapping("/{paymentId}/status")
     public ResponseEntity<PaymentStatus> getStatus(
             @PathVariable Long paymentId) {
         return ResponseEntity.ok(
-                paymentService
-                        .getPaymentStatus(paymentId));
+            paymentService.getPaymentStatus(paymentId));
     }
 
-    // Update payment status
+    // Only ADMIN can manually update payment status
     @PutMapping("/{paymentId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Payment> updateStatus(
             @PathVariable Long paymentId,
             @RequestParam PaymentStatus status) {
         return ResponseEntity.ok(
-                paymentService.updatePaymentStatus(
-                        paymentId, status));
+            paymentService.updatePaymentStatus(paymentId, status));
     }
 
-    // Get total revenue for provider
+    // PROVIDER or ADMIN can view revenue
     @GetMapping("/revenue/{providerId}")
+    @PreAuthorize("hasRole('PROVIDER') or hasRole('ADMIN')")
     public ResponseEntity<Double> getTotalRevenue(
             @PathVariable Long providerId) {
         return ResponseEntity.ok(
-                paymentService.getTotalRevenue(providerId));
+            paymentService.getTotalRevenue(providerId));
     }
 
-    // Get payments between dates
+    // Only ADMIN can view payment history between dates
     @GetMapping("/history")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Payment>> getHistory(
             @RequestParam @DateTimeFormat(
-                    iso = DateTimeFormat.ISO.DATE_TIME)
-                    LocalDateTime start,
+                iso = DateTimeFormat.ISO.DATE_TIME)
+                LocalDateTime start,
             @RequestParam @DateTimeFormat(
-                    iso = DateTimeFormat.ISO.DATE_TIME)
-                    LocalDateTime end) {
+                iso = DateTimeFormat.ISO.DATE_TIME)
+                LocalDateTime end) {
         return ResponseEntity.ok(
-                paymentService.getPaymentsBetweenDates(
-                        start, end));
+            paymentService.getPaymentsBetweenDates(start, end));
     }
 }
