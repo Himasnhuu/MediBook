@@ -17,6 +17,8 @@ public interface ProviderRepository extends JpaRepository<Provider, Long> {
     List<Provider> findByIsVerified(Boolean isVerified);
 
     List<Provider> findByIsAvailable(Boolean isAvailable);
+    
+    List<Provider> findByHasPendingChangesTrue();
 
     @Query("SELECT p FROM Provider p WHERE LOWER(p.clinicName) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(p.specialization) LIKE LOWER(CONCAT('%', :spec, '%'))")
     List<Provider> searchByNameOrSpecialization(@Param("name") String name, @Param("spec") String spec);

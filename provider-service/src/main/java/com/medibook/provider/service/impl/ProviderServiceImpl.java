@@ -65,6 +65,7 @@ public class ProviderServiceImpl implements ProviderService {
 		existing.setAvgRating(provider.getAvgRating());
 		existing.setIsVerified(provider.getIsVerified());
 		existing.setIsAvailable(provider.getIsAvailable());
+		existing.setIsVerified(false);
 
 		return providerRepository.save(existing);
 	}
@@ -104,4 +105,83 @@ public class ProviderServiceImpl implements ProviderService {
 	public List<Provider> getAllProviders() {
 		return providerRepository.findAll();
 	}
+
+	@Override
+	public Provider submitProfileUpdate(Long id, Provider updated) {
+		Provider existing = providerRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Provider not found"));
+
+		// Save changes to PENDING fields only — don't touch live fields
+		existing.setPendingSpecialization(updated.getSpecialization());
+		existing.setPendingQualification(updated.getQualification());
+		existing.setPendingExperienceYears(updated.getExperienceYears());
+		existing.setPendingBio(updated.getBio());
+		existing.setPendingClinicName(updated.getClinicName());
+		existing.setPendingClinicAddress(updated.getClinicAddress());
+		existing.setPendingConsultationFee(updated.getConsultationFee());
+		existing.setHasPendingChanges(true);
+
+		return providerRepository.save(existing);
+	}
+
+	@Override
+	public Provider approveProfileUpdate(Long id) {
+		Provider existing = providerRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Provider not found"));
+
+		// Copy pending fields to live fields
+		if (existing.getPendingSpecialization() != null)
+			existing.setSpecialization(existing.getPendingSpecialization());
+		if (existing.getPendingQualification() != null)
+			existing.setQualification(existing.getPendingQualification());
+		if (existing.getPendingExperienceYears() != null)
+			existing.setExperienceYears(existing.getPendingExperienceYears());
+		if (existing.getPendingBio() != null)
+			existing.setBio(existing.getPendingBio());
+		if (existing.getPendingClinicName() != null)
+			existing.setClinicName(existing.getPendingClinicName());
+		if (existing.getPendingClinicAddress() != null)
+			existing.setClinicAddress(existing.getPendingClinicAddress());
+		if (existing.getPendingConsultationFee() != null)
+			existing.setConsultationFee(existing.getPendingConsultationFee());
+
+		// Clear pending fields
+		existing.setPendingSpecialization(null);
+		existing.setPendingQualification(null);
+		existing.setPendingExperienceYears(null);
+		existing.setPendingBio(null);
+		existing.setPendingClinicName(null);
+		existing.setPendingClinicAddress(null);
+		existing.setPendingConsultationFee(null);
+		existing.setHasPendingChanges(false);
+
+		return providerRepository.save(existing);
+	}
+
+	@Override
+	public Provider rejectProfileUpdate(Long id) {
+		Provider existing = providerRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Provider not found"));
+
+		// Just clear pending fields — keep live fields as is
+		existing.setPendingSpecialization(null);
+		existing.setPendingQualification(null);
+		existing.setPendingExperienceYears(null);
+		existing.setPendingBio(null);
+		existing.setPendingClinicName(null);
+		existing.setPendingClinicAddress(null);
+		existing.setPendingConsultationFee(null);
+		existing.setHasPendingChanges(false);
+
+		return providerRepository.save(existing);
+	}
+
+	@Override
+	public Provider updateProfilePhoto(Long id, String photoUrl) {
+		Provider provider = providerRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Provider not found"));
+		provider.setProfilePhotoUrl(photoUrl);
+		return providerRepository.save(provider);
+	}
+
 }

@@ -1,5 +1,6 @@
 package com.medibook.provider.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,7 +22,19 @@ public class Provider {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long providerId;
-
+    
+ // Add these fields to store pending changes for provider profile updates
+    private String pendingSpecialization;
+    private String pendingQualification;
+    private Integer pendingExperienceYears;
+    private String pendingBio;
+    private String pendingClinicName;
+    private String pendingClinicAddress;
+    private Double pendingConsultationFee;
+    private Boolean hasPendingChanges; // default false
+    
+    
+    private Double consultationFee; // default 0.0
     private Long userId;
     private String specialization;
     private String qualification;
@@ -33,4 +46,9 @@ public class Provider {
     private Boolean isVerified = false;
     private Boolean isAvailable = true;
     private LocalDate createdAt;
+    
+    private String doctorName;
+    
+    @Column(columnDefinition = "LONGTEXT")
+    private String profilePhotoUrl;
 }

@@ -28,4 +28,10 @@ public interface ProviderService {
     void updateRating(Long id, double rating);
 
     List<Provider> getAllProviders();
+    
+    Provider submitProfileUpdate(Long id, Provider updatedProvider);
+    Provider approveProfileUpdate(Long id);
+    Provider rejectProfileUpdate(Long id);
+    
+    Provider updateProfilePhoto(Long id, String photoUrl);
 }
