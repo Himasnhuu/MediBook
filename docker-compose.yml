@@ -1,0 +1,177 @@
+version: '3.8'
+
+services:
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - medibook-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_URL=http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - medibook-network
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_URL=${AUTH_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - EUREKA_URL=http://eureka-server:8761/eureka/
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - OAUTH_REDIRECT_URI=${OAUTH_REDIRECT_URI}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - medibook-network
+
+  provider-service:
+    build: ./provider-service
+    container_name: provider-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_URL=${PROVIDER_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - EUREKA_URL=http://eureka-server:8761/eureka/
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - medibook-network
+
+  schedule-service:
+    build: ./schedule-service
+    container_name: schedule-service
+    ports:
+      - "8083:8083"
+    environment:
+      - DB_URL=${SCHEDULE_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - EUREKA_URL=http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - medibook-network
+
+  appointment-service:
+    build: ./appointment-service
+    container_name: appointment-service
+    ports:
+      - "8084:8084"
+    environment:
+      - DB_URL=${APPOINTMENT_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - EUREKA_URL=http://eureka-server:8761/eureka/
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - SCHEDULE_SERVICE_URL=http://schedule-service:8083
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - medibook-network
+
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "8085:8085"
+    environment:
+      - DB_URL=${PAYMENT_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - EUREKA_URL=http://eureka-server:8761/eureka/
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - medibook-network
+
+  medical-record-service:
+    build: ./medical-record-service
+    container_name: medical-record-service
+    ports:
+      - "8086:8086"
+    environment:
+      - DB_URL=${MEDICAL_RECORD_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - EUREKA_URL=http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - medibook-network
+
+  review-service:
+    build: ./review-service
+    container_name: review-service
+    ports:
+      - "8087:8087"
+    environment:
+      - DB_URL=${REVIEW_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - EUREKA_URL=http://eureka-server:8761/eureka/
+      - RABBITMQ_URL=${RABBITMQ_URL}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - medibook-network
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8088:8088"
+    environment:
+      - DB_URL=${NOTIFICATION_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - EUREKA_URL=http://eureka-server:8761/eureka/
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - medibook-network
+
+networks:
+  medibook-network:
+    driver: bridge
