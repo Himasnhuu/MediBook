@@ -1,0 +1,13 @@
+com\medibook\provider\repository\SpecializationRepository.class
+com\medibook\provider\service\impl\ProviderServiceImpl.class
+com\medibook\provider\security\OpenApiConfig.class
+com\medibook\provider\entity\Provider.class
+com\medibook\provider\service\ProviderService.class
+com\medibook\provider\ProviderServiceApplication.class
+com\medibook\provider\security\JwtUtil.class
+com\medibook\provider\repository\ProviderRepository.class
+com\medibook\provider\controller\ProviderController.class
+com\medibook\provider\security\SecurityConfig.class
+com\medibook\provider\entity\Specialization.class
+com\medibook\provider\security\JwtAuthFilter.class
+com\medibook\provider\controller\SpecializationController.class
