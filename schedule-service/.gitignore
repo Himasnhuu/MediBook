@@ -32,4 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-**/application-local.properties
+target/
+application-local.properties
+*.iml
+.idea/
