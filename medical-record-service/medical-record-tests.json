@@ -1,0 +1,177 @@
+{
+  "info": {
+    "name": "MediBook - Medical Record Service Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Create Medical Record",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointmentId\": 1,\n  \"patientId\": 1,\n  \"providerId\": 1,\n  \"diagnosis\": \"Viral Fever\",\n  \"prescription\": \"Paracetamol 500mg twice daily for 5 days\",\n  \"notes\": \"Patient has mild fever. Rest advised.\",\n  \"followUpDate\": \"2026-05-01\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8086/records",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records"]
+        }
+      }
+    },
+    {
+      "name": "2. Create Duplicate Record (should fail)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointmentId\": 1,\n  \"patientId\": 1,\n  \"providerId\": 1,\n  \"diagnosis\": \"Duplicate\",\n  \"prescription\": \"Should fail\",\n  \"notes\": \"This should not be created\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8086/records",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records"]
+        }
+      }
+    },
+    {
+      "name": "3. Get Record By ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "url": {
+          "raw": "http://localhost:8086/records/1",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records", "1"]
+        }
+      }
+    },
+    {
+      "name": "4. Get Record By Appointment",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "url": {
+          "raw": "http://localhost:8086/records/appointment/1",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records", "appointment", "1"]
+        }
+      }
+    },
+    {
+      "name": "5. Get Records By Patient",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "url": {
+          "raw": "http://localhost:8086/records/patient/1",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records", "patient", "1"]
+        }
+      }
+    },
+    {
+      "name": "6. Get Records By Provider",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "url": {
+          "raw": "http://localhost:8086/records/provider/1",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records", "provider", "1"]
+        }
+      }
+    },
+    {
+      "name": "7. Update Record",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"diagnosis\": \"Viral Fever - Updated\",\n  \"prescription\": \"Paracetamol 500mg three times daily\",\n  \"notes\": \"Fever persisting. Added antibiotic.\",\n  \"followUpDate\": \"2026-05-05\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8086/records/1",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records", "1"]
+        }
+      }
+    },
+    {
+      "name": "8. Attach Document",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {"key": "Content-Type", "value": "application/json"},
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"attachmentUrl\": \"https://s3.amazonaws.com/medibook/records/report-1.pdf\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8086/records/1/attach",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records", "1", "attach"]
+        }
+      }
+    },
+    {
+      "name": "9. Get Follow-Up Records (public)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8086/records/followups?date=2026-05-05",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records", "followups"],
+          "query": [{"key": "date", "value": "2026-05-05"}]
+        }
+      }
+    },
+    {
+      "name": "10. Get Record Count",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "Authorization", "value": "Bearer {{token}}"}
+        ],
+        "url": {
+          "raw": "http://localhost:8086/records/count/1",
+          "host": ["http://localhost"],
+          "port": "8086",
+          "path": ["records", "count", "1"]
+        }
+      }
+    }
+  ]
+}

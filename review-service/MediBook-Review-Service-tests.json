@@ -1,0 +1,527 @@
+{
+  "info": {
+    "name": "MediBook - Review Service",
+    "description": "Complete test suite for review-service on http://localhost:8087",
+    "_postman_id": "medibook-review-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "PHASE 1 — GET JWT TOKENS (auth-service)",
+      "item": [
+        {
+          "name": "1. Patient Login → Get JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "http://localhost:8081/auth/login",
+              "protocol": "http", "host": ["localhost"], "port": "8081",
+              "path": ["auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rahul.patient@medibook.com\",\n  \"password\": \"patient123\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Patient login 200', () => pm.response.to.have.status(200));",
+                "const token = pm.response.text().trim();",
+                "pm.test('Token received', () => pm.expect(token).to.be.a('string'));",
+                "pm.collectionVariables.set('patientToken', token);",
+                "console.log('Patient token saved');"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "2. Admin Login → Get JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "http://localhost:8081/auth/login",
+              "protocol": "http", "host": ["localhost"], "port": "8081",
+              "path": ["auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@medibook.com\",\n  \"password\": \"admin123\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Admin login 200', () => pm.response.to.have.status(200));",
+                "const token = pm.response.text().trim();",
+                "pm.collectionVariables.set('adminToken', token);",
+                "console.log('Admin token saved');"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "PHASE 2 — REVIEW TESTS (review-service)",
+      "item": [
+        {
+          "name": "3. Submit Review (PROTECTED - Patient JWT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8087/reviews",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": 1,\n  \"patientId\": 8,\n  \"providerId\": 3,\n  \"rating\": 4.5,\n  \"comment\": \"Dr. Himanshu was very thorough and explained everything clearly. Highly recommend!\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Review submitted - 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('reviewId assigned', () => pm.expect(body.reviewId).to.be.a('number'));",
+                "pm.test('rating is 4.5', () => pm.expect(body.rating).to.equal(4.5));",
+                "pm.test('isVisible is true', () => pm.expect(body.isVisible).to.be.true);",
+                "pm.test('createdAt set', () => pm.expect(body.createdAt).to.not.be.null);",
+                "pm.collectionVariables.set('reviewId', body.reviewId);",
+                "console.log('Review ID saved:', body.reviewId);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "4. Submit Same Review Again → 409 Conflict",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8087/reviews",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": 1,\n  \"patientId\": 8,\n  \"providerId\": 3,\n  \"rating\": 3.0,\n  \"comment\": \"Trying to submit again for same appointment\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Duplicate review returns 409', () => pm.response.to.have.status(409));",
+                "pm.test('Error message returned', () => {",
+                "  const body = pm.response.text();",
+                "  pm.expect(body).to.include('already submitted');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "5. Submit Review with Invalid Rating → 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8087/reviews",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": 99,\n  \"patientId\": 8,\n  \"providerId\": 3,\n  \"rating\": 6.0,\n  \"comment\": \"This rating is out of range\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Invalid rating returns 409', () => pm.response.to.have.status(409));",
+                "pm.test('Error message returned', () => {",
+                "  const body = pm.response.text();",
+                "  pm.expect(body).to.include('Rating must be between');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "6. Submit Second Review (different appointment)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8087/reviews",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": 2,\n  \"patientId\": 8,\n  \"providerId\": 3,\n  \"rating\": 5.0,\n  \"comment\": \"Second visit was even better. Perfect diagnosis and treatment.\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Second review submitted - 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('Different reviewId', () => pm.expect(body.reviewId).to.not.equal(pm.collectionVariables.get('reviewId')));",
+                "pm.collectionVariables.set('reviewId2', body.reviewId);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "7. Get All Reviews (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Get all returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('Returns array', () => pm.expect(body).to.be.an('array'));",
+                "pm.test('At least 2 reviews', () => pm.expect(body.length).to.be.at.least(2));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "8. Get Review by ID (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews/{{reviewId}}",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "{{reviewId}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Get by ID returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('rating is 4.5', () => pm.expect(body.rating).to.equal(4.5));",
+                "pm.test('isVisible is true', () => pm.expect(body.isVisible).to.be.true);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "9. Get Review by Appointment ID (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews/appointment/1",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "appointment", "1"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Get by appointment returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('appointmentId is 1', () => pm.expect(body.appointmentId).to.equal(1));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "10. Get Reviews by Provider (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews/provider/3",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "provider", "3"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Get by provider returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('Returns array', () => pm.expect(body).to.be.an('array'));",
+                "pm.test('At least 2 reviews', () => pm.expect(body.length).to.be.at.least(2));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "11. Get Visible Reviews by Provider (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews/provider/3/visible",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "provider", "3", "visible"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Get visible returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('All reviews are visible', () => body.forEach(r => pm.expect(r.isVisible).to.be.true));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "12. Get Average Rating for Provider (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews/provider/3/rating",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "provider", "3", "rating"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Average rating returns 200', () => pm.response.to.have.status(200));",
+                "const rating = pm.response.json();",
+                "pm.test('Rating is a number', () => pm.expect(rating).to.be.a('number'));",
+                "pm.test('Rating is between 1 and 5', () => {",
+                "  pm.expect(rating).to.be.at.least(1.0);",
+                "  pm.expect(rating).to.be.at.most(5.0);",
+                "});",
+                "console.log('Average rating for provider 3:', rating);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "13. Get Reviews by Patient (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews/patient/8",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "patient", "8"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Get by patient returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('Returns array', () => pm.expect(body).to.be.an('array'));",
+                "pm.test('All belong to patient 8', () => body.forEach(r => pm.expect(r.patientId).to.equal(8)));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "14. Check Appointment Has Review (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews/appointment/1/exists",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "appointment", "1", "exists"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Exists check returns 200', () => pm.response.to.have.status(200));",
+                "pm.test('Returns true', () => pm.expect(pm.response.json()).to.be.true);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "15. Check Appointment Without Review (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews/appointment/9999/exists",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "appointment", "9999", "exists"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Non-existent returns 200', () => pm.response.to.have.status(200));",
+                "pm.test('Returns false', () => pm.expect(pm.response.json()).to.be.false);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "16. Admin Hides Review (PROTECTED - Admin JWT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8087/reviews/{{reviewId}}/hide",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "{{reviewId}}", "hide"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Hide returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('isVisible is now false', () => pm.expect(body.isVisible).to.be.false);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "17. Confirm Hidden Review Not in Visible List (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8087/reviews/provider/3/visible",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "provider", "3", "visible"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Visible list returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "const hiddenReviewId = parseInt(pm.collectionVariables.get('reviewId'));",
+                "pm.test('Hidden review not in visible list', () => {",
+                "  const found = body.find(r => r.reviewId === hiddenReviewId);",
+                "  pm.expect(found).to.be.undefined;",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "18. Admin Shows Review Again (PROTECTED - Admin JWT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8087/reviews/{{reviewId}}/show",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "{{reviewId}}", "show"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Show returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('isVisible is true again', () => pm.expect(body.isVisible).to.be.true);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "19. No Token → 401 Unauthorized",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://localhost:8087/reviews",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": 100,\n  \"patientId\": 8,\n  \"providerId\": 3,\n  \"rating\": 4.0,\n  \"comment\": \"Should fail - no token\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('No token returns 401', () => pm.response.to.have.status(401));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "20. Delete Review (PROTECTED - Admin JWT)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8087/reviews/{{reviewId2}}",
+              "protocol": "http", "host": ["localhost"], "port": "8087",
+              "path": ["reviews", "{{reviewId2}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Delete returns 200', () => pm.response.to.have.status(200));",
+                "pm.test('Delete message returned', () => {",
+                "  pm.expect(pm.response.text()).to.include('deleted');",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "patientToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "reviewId", "value": "" },
+    { "key": "reviewId2", "value": "" }
+  ]
+}

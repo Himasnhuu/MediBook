@@ -1,0 +1,16 @@
+# Environment variables - NEVER push this
+.env
+
+# Target folders
+**/target/
+
+# IDE files
+.idea/
+*.iml
+.eclipse/
+.settings/
+.classpath
+.project
+
+# Logs
+*.log

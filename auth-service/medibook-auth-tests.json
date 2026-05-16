@@ -1,0 +1,155 @@
+{
+  "info": {
+    "name": "MediBook Auth Service Tests",
+    "description": "Postman collection for auth-service register/login flow checks.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "cf205ca8-2d4f-4f96-85cc-f2f5c4f2df8e"
+  },
+  "item": [
+    {
+      "name": "1. Register a new patient",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Test Patient\",\n  \"email\": \"patient@medibook.com\",\n  \"passwordHash\": \"test123\",\n  \"phone\": \"9999999999\",\n  \"role\": \"PATIENT\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "description": "Expected: HTTP 200 or 201 with user object returned"
+      }
+    },
+    {
+      "name": "2. Register a provider",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Dr. Sharma\",\n  \"email\": \"doctor@medibook.com\",\n  \"passwordHash\": \"doctor123\",\n  \"phone\": \"8888888888\",\n  \"role\": \"PROVIDER\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "description": "Expected: HTTP 200 or 201"
+      }
+    },
+    {
+      "name": "3. Login as patient",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"patient@medibook.com\",\n  \"password\": \"test123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Expected: HTTP 200 with JWT token string in format xxxxx.yyyyy.zzzzz"
+      }
+    },
+    {
+      "name": "4. Login with wrong password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"patient@medibook.com\",\n  \"password\": \"wrongpassword\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Expected: HTTP 400 or 401 or 500 with error message and not a token"
+      }
+    },
+    {
+      "name": "5. Login with non-existent email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"nobody@medibook.com\",\n  \"password\": \"test123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8081/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Expected: HTTP 400 or 404 with User not found message"
+      }
+    }
+  ]
+}
