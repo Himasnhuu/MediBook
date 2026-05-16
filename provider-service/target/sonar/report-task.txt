@@ -1,0 +1,6 @@
+projectKey=medibook-provider
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=medibook-provider
+ceTaskId=414a1f3d-5dd9-46ab-a22e-2f9e0e0852b9
+ceTaskUrl=http://localhost:9000/api/ce/task?id=414a1f3d-5dd9-46ab-a22e-2f9e0e0852b9

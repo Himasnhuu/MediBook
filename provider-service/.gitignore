@@ -1,0 +1,10 @@
+application-local.properties
+target/
+*.iml
+.idea/
+.settings/
+.classpath
+.project
+.springBeans
+.sts4-cache
+.apt_generated

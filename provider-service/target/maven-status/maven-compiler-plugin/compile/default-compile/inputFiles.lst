@@ -1,0 +1,13 @@
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\repository\ProviderRepository.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\repository\SpecializationRepository.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\controller\ProviderController.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\ProviderServiceApplication.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\security\JwtUtil.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\security\OpenApiConfig.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\entity\Specialization.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\entity\Provider.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\service\impl\ProviderServiceImpl.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\service\ProviderService.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\security\SecurityConfig.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\security\JwtAuthFilter.java
+E:\capgemini-training\medibook-backend\provider-service\src\main\java\com\medibook\provider\controller\SpecializationController.java
