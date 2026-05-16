@@ -1,0 +1,504 @@
+{
+  "info": {
+    "name": "MediBook - Notification Service",
+    "description": "Complete test suite for notification-service on http://localhost:8088. Real emails will be sent to your Gmail inbox.",
+    "_postman_id": "medibook-notification-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "PHASE 1 — GET JWT TOKEN (auth-service)",
+      "item": [
+        {
+          "name": "1. Admin Login → Get JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "http://localhost:8081/auth/login",
+              "protocol": "http", "host": ["localhost"], "port": "8081",
+              "path": ["auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@medibook.com\",\n  \"password\": \"admin123\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Admin login 200', () => pm.response.to.have.status(200));",
+                "const token = pm.response.text().trim();",
+                "pm.collectionVariables.set('adminToken', token);",
+                "console.log('Admin token saved');"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "2. Patient Login → Get JWT",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "http://localhost:8081/auth/login",
+              "protocol": "http", "host": ["localhost"], "port": "8081",
+              "path": ["auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rahul.patient@medibook.com\",\n  \"password\": \"patient123\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Patient login 200', () => pm.response.to.have.status(200));",
+                "const token = pm.response.text().trim();",
+                "pm.collectionVariables.set('patientToken', token);",
+                "console.log('Patient token saved');"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "PHASE 2 — SEND REAL EMAILS (notification-service)",
+      "item": [
+        {
+          "name": "3. Send Appointment Booked Email (PROTECTED)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/appointment-booked",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "appointment-booked"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"8\",\n  \"recipientEmail\": \"patelhimanshu609@gmail.com\",\n  \"appointmentId\": \"1\",\n  \"doctorName\": \"Dr. Himanshu Patel\",\n  \"date\": \"2026-04-25\",\n  \"time\": \"09:00 AM\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Notification created - 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('notificationId assigned', () => pm.expect(body.notificationId).to.be.a('number'));",
+                "pm.test('type is APPOINTMENT_BOOKED', () => pm.expect(body.type).to.equal('APPOINTMENT_BOOKED'));",
+                "pm.test('emailSent is true', () => pm.expect(body.emailSent).to.be.true);",
+                "pm.test('isRead is false', () => pm.expect(body.isRead).to.be.false);",
+                "pm.collectionVariables.set('notificationId1', body.notificationId);",
+                "console.log('Check your Gmail inbox for Appointment Booked email!');"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "4. Send Appointment Cancelled Email (PROTECTED)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/appointment-cancelled",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "appointment-cancelled"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"8\",\n  \"recipientEmail\": \"patelhimanshu609@gmail.com\",\n  \"appointmentId\": \"2\",\n  \"doctorName\": \"Dr. Himanshu Patel\",\n  \"date\": \"2026-04-26\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Notification created - 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('type is APPOINTMENT_CANCELLED', () => pm.expect(body.type).to.equal('APPOINTMENT_CANCELLED'));",
+                "pm.test('emailSent is true', () => pm.expect(body.emailSent).to.be.true);",
+                "pm.collectionVariables.set('notificationId2', body.notificationId);",
+                "console.log('Check your Gmail inbox for Appointment Cancelled email!');"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "5. Send Appointment Completed Email (PROTECTED)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/appointment-completed",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "appointment-completed"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"8\",\n  \"recipientEmail\": \"patelhimanshu609@gmail.com\",\n  \"appointmentId\": \"1\",\n  \"doctorName\": \"Dr. Himanshu Patel\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Notification created - 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('type is APPOINTMENT_COMPLETED', () => pm.expect(body.type).to.equal('APPOINTMENT_COMPLETED'));",
+                "pm.test('emailSent is true', () => pm.expect(body.emailSent).to.be.true);",
+                "console.log('Check your Gmail inbox for Appointment Completed email!');"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "6. Send Payment Success Email (PROTECTED)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/payment-success",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "payment-success"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"8\",\n  \"recipientEmail\": \"patelhimanshu609@gmail.com\",\n  \"amount\": \"500\",\n  \"transactionId\": \"TXN-2026-001\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Notification created - 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('type is PAYMENT_SUCCESS', () => pm.expect(body.type).to.equal('PAYMENT_SUCCESS'));",
+                "pm.test('emailSent is true', () => pm.expect(body.emailSent).to.be.true);",
+                "console.log('Check your Gmail inbox for Payment Success email!');"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "7. Send Payment Refunded Email (PROTECTED)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/payment-refunded",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "payment-refunded"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"8\",\n  \"recipientEmail\": \"patelhimanshu609@gmail.com\",\n  \"amount\": \"500\",\n  \"transactionId\": \"TXN-2026-001\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Notification created - 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('type is PAYMENT_REFUNDED', () => pm.expect(body.type).to.equal('PAYMENT_REFUNDED'));",
+                "pm.test('emailSent is true', () => pm.expect(body.emailSent).to.be.true);",
+                "console.log('Check your Gmail inbox for Payment Refunded email!');"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "8. Send Review Received Email (PROTECTED)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/review-received",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "review-received"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"7\",\n  \"recipientEmail\": \"patelhimanshu609@gmail.com\",\n  \"patientName\": \"Rahul Sharma\",\n  \"rating\": \"4.5\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Notification created - 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('type is REVIEW_RECEIVED', () => pm.expect(body.type).to.equal('REVIEW_RECEIVED'));",
+                "pm.test('emailSent is true', () => pm.expect(body.emailSent).to.be.true);",
+                "console.log('Check your Gmail inbox for Review Received email!');"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "PHASE 3 — NOTIFICATION MANAGEMENT",
+      "item": [
+        {
+          "name": "9. Get All Notifications for User (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8088/notifications/user/8",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "user", "8"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Get all returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('Returns array', () => pm.expect(body).to.be.an('array'));",
+                "pm.test('At least 5 notifications', () => pm.expect(body.length).to.be.at.least(5));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "10. Get Unread Notifications (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8088/notifications/user/8/unread",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "user", "8", "unread"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Get unread returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('All are unread', () => body.forEach(n => pm.expect(n.isRead).to.be.false));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "11. Get Unread Count (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8088/notifications/user/8/count",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "user", "8", "count"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Count returns 200', () => pm.response.to.have.status(200));",
+                "const count = pm.response.json();",
+                "pm.test('Count is a number', () => pm.expect(count).to.be.a('number'));",
+                "console.log('Unread count for user 8:', count);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "12. Get Single Notification (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8088/notifications/{{notificationId1}}",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "{{notificationId1}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Get single returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('type is APPOINTMENT_BOOKED', () => pm.expect(body.type).to.equal('APPOINTMENT_BOOKED'));",
+                "pm.test('isRead is false', () => pm.expect(body.isRead).to.be.false);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "13. Mark Single Notification as Read (PROTECTED)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/{{notificationId1}}/read",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "{{notificationId1}}", "read"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Mark read returns 200', () => pm.response.to.have.status(200));",
+                "const body = pm.response.json();",
+                "pm.test('isRead is now true', () => pm.expect(body.isRead).to.be.true);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "14. Verify Unread Count Decreased (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8088/notifications/user/8/count",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "user", "8", "count"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Count returns 200', () => pm.response.to.have.status(200));",
+                "const count = pm.response.json();",
+                "console.log('Unread count after marking one as read:', count);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "15. Mark All as Read (PROTECTED)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{patientToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/user/8/read-all",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "user", "8", "read-all"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Mark all read returns 200', () => pm.response.to.have.status(200));",
+                "pm.test('Success message returned', () => {",
+                "  pm.expect(pm.response.text()).to.include('marked as read');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "16. Verify Unread Count is Zero (PUBLIC)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8088/notifications/user/8/count",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "user", "8", "count"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Count returns 200', () => pm.response.to.have.status(200));",
+                "const count = pm.response.json();",
+                "pm.test('Unread count is 0', () => pm.expect(count).to.equal(0));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "17. No Token → 401 Unauthorized",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/payment-success",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "payment-success"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"8\",\n  \"recipientEmail\": \"patelhimanshu609@gmail.com\",\n  \"amount\": \"100\",\n  \"transactionId\": \"TXN-FAKE\"\n}"
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('No token returns 401', () => pm.response.to.have.status(401));"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "18. Delete Notification (PROTECTED)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:8088/notifications/{{notificationId2}}",
+              "protocol": "http", "host": ["localhost"], "port": "8088",
+              "path": ["notifications", "{{notificationId2}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Delete returns 200', () => pm.response.to.have.status(200));",
+                "pm.test('Delete message returned', () => {",
+                "  pm.expect(pm.response.text()).to.include('deleted');",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "adminToken", "value": "" },
+    { "key": "patientToken", "value": "" },
+    { "key": "notificationId1", "value": "" },
+    { "key": "notificationId2", "value": "" }
+  ]
+}
