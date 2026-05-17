@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   eureka-server:
-    build: ./eureka-server
+    image: patelhimanshu609/eureka-server:latest
     container_name: eureka-server
     ports:
       - "8761:8761"
@@ -17,7 +17,7 @@ services:
       start_period: 40s
 
   api-gateway:
-    build: ./api-gateway
+    image: patelhimanshu609/api-gateway:latest
     container_name: api-gateway
     ports:
       - "8080:8080"
@@ -30,7 +30,7 @@ services:
       - medibook-network
 
   auth-service:
-    build: ./auth-service
+    image: patelhimanshu609/auth-service:latest
     container_name: auth-service
     ports:
       - "8081:8081"
@@ -51,7 +51,7 @@ services:
       - medibook-network
 
   provider-service:
-    build: ./provider-service
+    image: patelhimanshu609/provider-service:latest
     container_name: provider-service
     ports:
       - "8082:8082"
@@ -68,7 +68,7 @@ services:
       - medibook-network
 
   schedule-service:
-    build: ./schedule-service
+    image: patelhimanshu609/schedule-service:latest
     container_name: schedule-service
     ports:
       - "8083:8083"
@@ -84,7 +84,7 @@ services:
       - medibook-network
 
   appointment-service:
-    build: ./appointment-service
+    image: patelhimanshu609/appointment-service:latest
     container_name: appointment-service
     ports:
       - "8084:8084"
@@ -102,7 +102,7 @@ services:
       - medibook-network
 
   payment-service:
-    build: ./payment-service
+    image: patelhimanshu609/payment-service:latest
     container_name: payment-service
     ports:
       - "8085:8085"
@@ -121,7 +121,7 @@ services:
       - medibook-network
 
   medical-record-service:
-    build: ./medical-record-service
+    image: patelhimanshu609/medical-record-service:latest
     container_name: medical-record-service
     ports:
       - "8086:8086"
@@ -137,7 +137,7 @@ services:
       - medibook-network
 
   review-service:
-    build: ./review-service
+    image: patelhimanshu609/review-service:latest
     container_name: review-service
     ports:
       - "8087:8087"
@@ -154,7 +154,7 @@ services:
       - medibook-network
 
   notification-service:
-    build: ./notification-service
+    image: patelhimanshu609/notification-service:latest
     container_name: notification-service
     ports:
       - "8088:8088"
