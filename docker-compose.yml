@@ -9,12 +9,6 @@ services:
       - "8761:8761"
     networks:
       - medibook-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 40s
 
   api-gateway:
     image: patelhimanshu609/api-gateway:latest
@@ -24,8 +18,7 @@ services:
     environment:
       - EUREKA_URL=http://eureka-server:8761/eureka/
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
     networks:
       - medibook-network
 
@@ -45,8 +38,7 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - OAUTH_REDIRECT_URI=${OAUTH_REDIRECT_URI}
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
     networks:
       - medibook-network
 
@@ -62,8 +54,7 @@ services:
       - EUREKA_URL=http://eureka-server:8761/eureka/
       - REDIS_URL=${REDIS_URL}
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
     networks:
       - medibook-network
 
@@ -78,8 +69,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - EUREKA_URL=http://eureka-server:8761/eureka/
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
     networks:
       - medibook-network
 
@@ -96,8 +86,7 @@ services:
       - RABBITMQ_URL=${RABBITMQ_URL}
       - SCHEDULE_SERVICE_URL=http://schedule-service:8083
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
     networks:
       - medibook-network
 
@@ -115,8 +104,7 @@ services:
       - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
       - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
     networks:
       - medibook-network
 
@@ -131,8 +119,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - EUREKA_URL=http://eureka-server:8761/eureka/
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
     networks:
       - medibook-network
 
@@ -148,8 +135,7 @@ services:
       - EUREKA_URL=http://eureka-server:8761/eureka/
       - RABBITMQ_URL=${RABBITMQ_URL}
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
     networks:
       - medibook-network
 
@@ -167,8 +153,7 @@ services:
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
     depends_on:
-      eureka-server:
-        condition: service_healthy
+      - eureka-server
     networks:
       - medibook-network
 
