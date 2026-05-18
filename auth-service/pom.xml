@@ -19,7 +19,8 @@
 		<java.version>17</java.version>
 		<sonar.organization>himasnhuu</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-		<sonar.projectKey>Himasnhuu_MediBook</sonar.projectKey>
+		<sonar.projectKey>Himasnhuu_MediBook_auth-service</sonar.projectKey>
+    	<sonar.projectName>MediBook - Auth Service</sonar.projectName>
 	</properties>
 
 	<dependencyManagement>
