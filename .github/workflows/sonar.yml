@@ -1,9 +1,7 @@
 name: SonarCloud Analysis
-
 on:
   push:
     branches: [ main ]
-
 jobs:
   sonar:
     runs-on: ubuntu-latest
@@ -31,7 +29,7 @@ jobs:
           distribution: 'zulu'
       - name: SonarCloud Scan
         working-directory: ${{ matrix.service }}
-        run: mvn verify sonar:sonar -DskipTests
+        run: mvn verify sonar:sonar -DskipTests -Dsonar.branch.name=master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
