@@ -21,6 +21,7 @@
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.projectKey>Himasnhuu_MediBook_auth-service</sonar.projectKey>
     	<sonar.projectName>MediBook - Auth Service</sonar.projectName>
+		<sonar.branch.name>main</sonar.branch.name>
 	</properties>
 
 	<dependencyManagement>
