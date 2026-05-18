@@ -1,5 +1,6 @@
 package com.medibook.appointment.service.impl;
 
+import com.medibook.appointment.client.ScheduleServiceClient;
 import com.medibook.appointment.entity.Appointment;
 import com.medibook.appointment.entity.AppointmentStatus;
 import com.medibook.appointment.event.AppointmentEventPublisher;
@@ -17,7 +18,8 @@ import java.util.Optional;
 public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
-    private final AppointmentEventPublisher eventPublisher; // ← ADD
+    private final AppointmentEventPublisher eventPublisher;
+    private final ScheduleServiceClient scheduleServiceClient;
 
     @Override
     public Appointment bookAppointment(Appointment appointment) {
@@ -31,6 +33,12 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setCreatedAt(LocalDateTime.now());
         appointment.setUpdatedAt(LocalDateTime.now());
         Appointment saved = appointmentRepository.save(appointment);
+
+        try {
+            scheduleServiceClient.bookSlot(saved.getSlotId());
+        } catch (Exception e) {
+            System.err.println("Failed to book slot: " + e.getMessage());
+        }
 
         // ← PUBLISH EVENT
         try {
@@ -90,6 +98,12 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointment.setUpdatedAt(LocalDateTime.now());
         Appointment saved = appointmentRepository.save(appointment);
+
+        try {
+            scheduleServiceClient.releaseSlot(saved.getSlotId());
+        } catch (Exception e) {
+            System.err.println("Failed to release slot: " + e.getMessage());
+        }
 
         // ← PUBLISH EVENT
         try {

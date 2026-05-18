@@ -54,7 +54,7 @@ public class ScheduleController {
 	}
 
 	@PutMapping("/{slotId}/release")
-	@PreAuthorize("hasRole('PROVIDER') or hasRole('ADMIN')")
+	@PreAuthorize("hasRole('PROVIDER') or hasRole('ADMIN') or hasRole('PATIENT')")
 	public ResponseEntity<String> releaseSlot(@PathVariable Long slotId) {
 		scheduleService.releaseSlot(slotId);
 		return ResponseEntity.ok("Slot released successfully");
