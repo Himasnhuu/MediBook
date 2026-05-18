@@ -22,7 +22,8 @@
 		<spring-cloud.version>2023.0.0</spring-cloud.version>
 		<sonar.organization>himasnhuu</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-		<sonar.projectKey>Himasnhuu_MediBook</sonar.projectKey>
+		<sonar.projectKey>Himasnhuu_MediBook_eureka-server</sonar.projectKey>
+		<sonar.projectName>MediBook - Eureka Server</sonar.projectName>
 	</properties>
 
 	<dependencies>

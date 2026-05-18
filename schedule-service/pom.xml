@@ -21,7 +21,9 @@
 		<java.version>17</java.version>
 		<sonar.organization>himasnhuu</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-		<sonar.projectKey>Himasnhuu_MediBook</sonar.projectKey>
+		<!-- <sonar.projectKey>Himasnhuu_MediBook</sonar.projectKey> -->
+		<sonar.projectKey>Himasnhuu_MediBook_schedule-service</sonar.projectKey>
+		<sonar.projectName>MediBook - Schedule Service</sonar.projectName>
 	</properties>
 
 	<dependencyManagement>
