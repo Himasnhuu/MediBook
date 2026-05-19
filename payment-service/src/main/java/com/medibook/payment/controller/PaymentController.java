@@ -75,9 +75,18 @@ public class PaymentController {
             paymentService.getPaymentHistory());
     }
 
-    // PATIENT or ADMIN can request refund
+    // PATIENT can request refund (pending admin approval)
+    @PutMapping("/{paymentId}/request-refund")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<Payment> requestRefund(
+            @PathVariable Long paymentId) {
+        return ResponseEntity.ok(
+            paymentService.requestRefund(paymentId));
+    }
+
+    // Only ADMIN can process actual refund
     @PutMapping("/{paymentId}/refund")
-    @PreAuthorize("hasRole('PATIENT') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Payment> refund(
             @PathVariable Long paymentId) {
         return ResponseEntity.ok(

@@ -90,6 +90,17 @@ public class PaymentServiceImpl implements PaymentService {
 	}
 
 	@Override
+	public Payment requestRefund(Long paymentId) {
+		Payment payment = paymentRepository.findById(paymentId)
+				.orElseThrow(() -> new RuntimeException("Payment not found"));
+		if (payment.getStatus() != PaymentStatus.PAID) {
+			throw new RuntimeException("Only PAID payments can have refund requested");
+		}
+		payment.setStatus(PaymentStatus.REFUND_REQUESTED);
+		return paymentRepository.save(payment);
+	}
+
+	@Override
 	public PaymentStatus getPaymentStatus(Long paymentId) {
 		Payment payment = paymentRepository.findById(paymentId)
 				.orElseThrow(() -> new RuntimeException("Payment not found"));
