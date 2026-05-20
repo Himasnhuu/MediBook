@@ -77,20 +77,34 @@ public class PaymentController {
 
     // PATIENT can request refund (pending admin approval)
     @PutMapping("/{paymentId}/request-refund")
-    @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<Payment> requestRefund(
-            @PathVariable Long paymentId) {
-        return ResponseEntity.ok(
-            paymentService.requestRefund(paymentId));
+    public ResponseEntity<?> requestRefund(@PathVariable Long paymentId) {
+        try {
+            return ResponseEntity.ok(paymentService.requestRefund(paymentId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    // Only ADMIN can process actual refund
+    // ADMIN approves refund
     @PutMapping("/{paymentId}/refund")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Payment> refund(
-            @PathVariable Long paymentId) {
-        return ResponseEntity.ok(
-            paymentService.refundPayment(paymentId));
+    public ResponseEntity<?> refund(@PathVariable Long paymentId) {
+        try {
+            return ResponseEntity.ok(paymentService.refundPayment(paymentId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // ADMIN rejects refund
+    @PutMapping("/{paymentId}/reject-refund")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> rejectRefund(@PathVariable Long paymentId) {
+        try {
+            return ResponseEntity.ok(paymentService.rejectRefund(paymentId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // Public — anyone can check payment status

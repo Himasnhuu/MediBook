@@ -71,8 +71,8 @@ public class PaymentServiceImpl implements PaymentService {
 	public Payment refundPayment(Long paymentId) {
 		Payment payment = paymentRepository.findById(paymentId)
 				.orElseThrow(() -> new RuntimeException("Payment not found"));
-		if (payment.getStatus() != PaymentStatus.PAID) {
-			throw new RuntimeException("Only PAID payments can be refunded");
+		if (payment.getStatus() != PaymentStatus.REFUND_REQUESTED) {
+			throw new RuntimeException("Only REFUND_REQUESTED payments can be approved");
 		}
 		payment.setStatus(PaymentStatus.REFUNDED);
 		payment.setRefundedAt(LocalDateTime.now());
@@ -87,6 +87,17 @@ public class PaymentServiceImpl implements PaymentService {
 		}
 
 		return saved;
+	}
+
+	@Override
+	public Payment rejectRefund(Long paymentId) {
+		Payment payment = paymentRepository.findById(paymentId)
+				.orElseThrow(() -> new RuntimeException("Payment not found"));
+		if (payment.getStatus() != PaymentStatus.REFUND_REQUESTED) {
+			throw new RuntimeException("Only REFUND_REQUESTED payments can be rejected");
+		}
+		payment.setStatus(PaymentStatus.REFUND_REJECTED);
+		return paymentRepository.save(payment);
 	}
 
 	@Override

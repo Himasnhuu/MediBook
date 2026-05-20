@@ -34,6 +34,9 @@ public interface PaymentService {
     // Request a refund (patient-initiated, pending admin approval)
     Payment requestRefund(Long paymentId);
 
+    // Reject a refund request (admin)
+    Payment rejectRefund(Long paymentId);
+
     // Get payment status
     PaymentStatus getPaymentStatus(Long paymentId);
 

@@ -36,11 +36,10 @@ public class SecurityConfig {
 				.exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> response
 						.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html")
+						.requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html", "/error")
 						.permitAll()
-						// Public — payment status check only
 						.requestMatchers(HttpMethod.GET, "/payments/*/status").permitAll()
-						// Everything else handled by @PreAuthorize
+						.requestMatchers("/payments/*/request-refund").permitAll()
 						.anyRequest().authenticated())
 				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
